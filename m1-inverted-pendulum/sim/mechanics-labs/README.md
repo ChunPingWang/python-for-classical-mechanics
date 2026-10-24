@@ -11,4 +11,4 @@ python run_all.py
 - `labB*`：Lagrangian 力學（Taylor《Classical Mechanics》Ch7、11、12、13）
 - `labC*`：控制（Tedrake《Underactuated Robotics》）；`cartpole.py` 為共用模型，換成實體硬體時改 `PARAMS`
 
-最近一次驗證：92 項檢核全部 PASS（Python 3.13.17、numpy 2.5.3、scipy 1.18.1、sympy 1.14.0、matplotlib 3.11.2）。
+最近一次驗證（2026-10-24）：92 項檢核全部 PASS（Python 3.13.15 / numpy 2.5.3 與 Python 3.12.14 / numpy 2.5.4；scipy 1.18.1、sympy 1.14.0、matplotlib 3.11.2）。`lab02` 會在本目錄輸出 `lab02.png`，已列入 `.gitignore`。
