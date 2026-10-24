@@ -100,7 +100,7 @@ for d in range(1, 13):
 # 延遲預算 = 振幅「跳升」前的最後一拍（相鄰兩拍振幅比 > 4 且超過 0.005 rad）。
 # 用跳升而不是固定門檻判定，是因為量化 + 延遲會先形成小極限環，振幅剛好卡在門檻上時不同平台會得到不同答案。
 max_ok = next((d - 1 for d in range(2, 13) if amps[d] > 0.005 and amps[d] > 4 * amps[d - 1]), 12)
-print(f"200 Hz 下可容忍的延遲 ≈ {max_ok} 拍 = {max_ok*5} ms（下一拍振幅跳升 {amps[max_ok+1]/amps[max_ok]:.0f} 倍）")
+print(f"200 Hz 下可容忍的延遲 ≈ {max_ok} 拍 = {max_ok*5} ms（第 {max_ok+1} 拍起振幅跳升）")
 check("延遲預算有限：數十 ms 等級", 1 <= max_ok < 15)
 
 # ---------- 3) 量測雜訊 → 角度殘餘抖動；差分 + 低通 vs Kalman ----------
