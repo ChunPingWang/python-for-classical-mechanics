@@ -7,9 +7,7 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
-def check(name, cond):
-    print(f"[{'PASS' if cond else 'FAIL'}] {name}")
-    assert cond, name
+from labutils import check
 
 m, l, b, g = 0.5, 0.4, 0.02, 9.81
 I = m * l**2
@@ -23,7 +21,7 @@ def make_rhs(controller, d=0.0, u_max=np.inf):
 
 def run(controller, th0=0.3, d=0.0, u_max=np.inf, T=6.0):
     sol = solve_ivp(make_rhs(controller, d, u_max), (0, T), [th0, 0, 0],
-                    max_step=1e-3, rtol=1e-8, atol=1e-10)
+                    max_step=5e-3, rtol=1e-8, atol=1e-10)      # max_step 只是為了讓飽和切換不被跳過
     return sol.t, sol.y
 
 # 以「期望閉迴路自然頻率 ωn、阻尼比 ζ」來設計 PD 增益（線性化後 I θ̈ = (mgl - Kp) θ - (b+Kd) θ̇）

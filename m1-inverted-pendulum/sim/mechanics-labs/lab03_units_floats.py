@@ -3,9 +3,7 @@
 """
 import numpy as np
 
-def check(name, cond):
-    print(f"[{'PASS' if cond else 'FAIL'}] {name}")
-    assert cond, name
+from labutils import check
 
 # 1) 單位換算：寫成常數表，所有計算一律先轉 SI
 KM, HOUR, MILE = 1000.0, 3600.0, 1609.344

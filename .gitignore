@@ -6,4 +6,5 @@ __pycache__/
 install/
 log/
 .venv/
-m1-inverted-pendulum/sim/mechanics-labs/*.png
+m1-inverted-pendulum/sim/mechanics-labs/out/
+.pytest_cache/

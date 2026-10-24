@@ -5,9 +5,7 @@
 import numpy as np
 from scipy.integrate import trapezoid, simpson, solve_ivp
 
-def check(name, cond):
-    print(f"[{'PASS' if cond else 'FAIL'}] {name}")
-    assert cond, name
+from labutils import check
 
 # ---------- 10.1 數值積分求功：W = ∫ F(x) dx ----------
 k, x1 = 100.0, 0.2

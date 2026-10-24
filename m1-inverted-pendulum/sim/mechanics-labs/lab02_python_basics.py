@@ -3,13 +3,9 @@
 numpy / matplotlib 物件導向 API、np.random.default_rng、向量化寫法。
 """
 import numpy as np
-import matplotlib
-matplotlib.use("Agg")            # 無視窗環境也能跑；本機互動時可刪掉這行
-import matplotlib.pyplot as plt
+from labutils import want_plot, out_path
 
-def check(name, cond):
-    print(f"[{'PASS' if cond else 'FAIL'}] {name}")
-    assert cond, name
+from labutils import check
 
 # 1) 中央差分求導數：f(x)=exp(-x^2)，與解析解比較（原書 Ex. 2.7.1）
 x = np.linspace(-5, 5, 1001)
@@ -36,9 +32,14 @@ rms = np.sqrt(np.mean(paths[:, -1] ** 2))
 print(f"RMS displacement after N=1000 steps = {rms:.1f} (理論 sqrt(N)={np.sqrt(1000):.1f})")
 check("RMS 位移 ≈ sqrt(N)（誤差 < 5%）", abs(rms / np.sqrt(1000) - 1) < 0.05)
 
-fig, ax = plt.subplots(1, 2, figsize=(9, 3.5))
-ax[0].plot(x, f(x), label="f(x)")
-ax[0].plot(x, df_num, "--", label="f'(x) numeric")
-ax[0].legend(); ax[0].set_xlabel("x")
-ax[1].loglog(hs, errs, "o-"); ax[1].set_xlabel("h"); ax[1].set_ylabel("|error|")
-fig.tight_layout(); fig.savefig("lab02.png", dpi=120)
+if want_plot():                                   # python lab02_python_basics.py --plot
+    import matplotlib
+    matplotlib.use("Agg")                         # 無視窗環境也能存檔
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(1, 2, figsize=(9, 3.5))
+    ax[0].plot(x, f(x), label="f(x)")
+    ax[0].plot(x, df_num, "--", label="f'(x) numeric")
+    ax[0].legend(); ax[0].set_xlabel("x")
+    ax[1].loglog(hs, errs, "o-"); ax[1].set_xlabel("h"); ax[1].set_ylabel("|error|")
+    fig.tight_layout(); fig.savefig(out_path("lab02.png"), dpi=120)
+    print("圖已存到", out_path("lab02.png"))

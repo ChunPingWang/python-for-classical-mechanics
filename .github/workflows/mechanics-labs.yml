@@ -1,0 +1,42 @@
+name: mechanics-labs
+
+on:
+  push:
+    paths:
+      - "m1-inverted-pendulum/sim/mechanics-labs/**"
+      - "docs/mechanics/**"
+      - ".github/workflows/mechanics-labs.yml"
+  pull_request:
+    paths:
+      - "m1-inverted-pendulum/sim/mechanics-labs/**"
+      - "docs/mechanics/**"
+      - ".github/workflows/mechanics-labs.yml"
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: m1-inverted-pendulum/sim/mechanics-labs
+
+jobs:
+  labs:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+      - name: 安裝相依（依 uv.lock）
+        run: uv sync --frozen
+      - name: 執行全部 Lab
+        run: uv run python run_all.py -j 2
+      - name: 文件「預期輸出」與實際輸出比對
+        # 文件數字是在 macOS（Accelerate BLAS）上產生的；Linux 的 OpenBLAS 可能讓最後一位小數不同，所以只警告
+        continue-on-error: ${{ runner.os != 'macOS' }}
+        run: uv run python check_docs.py

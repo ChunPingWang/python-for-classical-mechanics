@@ -5,9 +5,7 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
-def check(name, cond):
-    print(f"[{'PASS' if cond else 'FAIL'}] {name}")
-    assert cond, name
+from labutils import check
 
 g = 9.81
 # ---------- 15.3 轉動慣量：Monte-Carlo 數值積分 vs 解析 ----------

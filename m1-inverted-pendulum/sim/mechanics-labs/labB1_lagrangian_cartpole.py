@@ -8,9 +8,7 @@ import sympy as sp
 from scipy.integrate import solve_ivp
 import cartpole as cp
 
-def check(name, cond):
-    print(f"[{'PASS' if cond else 'FAIL'}] {name}")
-    assert cond, name
+from labutils import check
 
 t = sp.symbols("t")
 

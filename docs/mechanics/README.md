@@ -1,7 +1,7 @@
 # 力學 × Python × 控制：對應《Elementary Mechanics Using Python》的現代化教材與實驗
 
 > **版本** v1（2026-10-24）｜**定位**：Physical AI 自學手冊的「力學 → 模擬 → 控制」主線教材，終點是倒立擺（cart-pole）甩起與平衡。
-> **驗證狀態**：本文所有程式碼都已實際執行，15 支實驗共 92 項自動檢核全部 PASS（測試環境：Python 3.13.15 / numpy 2.5.3 與 Python 3.12.14 / numpy 2.5.4，scipy 1.18.1、sympy 1.14.0、matplotlib 3.11.2，macOS Accelerate BLAS）。
+> **驗證狀態**：本文所有程式碼都已實際執行，15 支實驗共 96 項自動檢核全部 PASS（測試環境：Python 3.13.15 / numpy 2.5.3 與 Python 3.12.14 / numpy 2.5.4，scipy 1.18.1、sympy 1.14.0、matplotlib 3.11.2，macOS Accelerate BLAS）。
 
 ---
 
@@ -27,15 +27,16 @@
 
 ```bash
 cd m1-inverted-pendulum/sim/mechanics-labs
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-python run_all.py            # 一次跑完全部 Lab，彙整 PASS/FAIL
-python labC3_swingup.py      # 或單獨執行任一課
+uv sync                              # 依 uv.lock 建立 .venv（不用 uv 的話：pip install -r requirements.txt）
+uv run python run_all.py             # 平行跑完全部 Lab，彙整 PASS/FAIL（-j 1 改為依序，--only labC 只跑 Part C）
+uv run python check_docs.py          # 確認教材的「預期輸出」與程式實際輸出一致（--update 可回寫）
+uv run pytest -q                     # 同一組檢查的 pytest 介面
+uv run python labC3_swingup.py       # 或單獨執行任一課；有圖的 Lab 加 --plot 會存到 out/
 ```
 
-- 需要 `numpy>=2.0`，因為 Lab 14–16 使用 `np.trapezoid`。在舊版 numpy 中，這個函式叫 `np.trapz`。
-- 所有程式放在同一個資料夾，`labB*`、`labC*` 會 `import cartpole`。
-- 每個 Lab 的「預期輸出」都是在上述環境實際跑出來的結果。不同平台在最後幾位小數可能略有差異，但 PASS/FAIL 不應改變。如果出現 FAIL，代表環境或程式有差異，值得追查。
+- 需要 `numpy>=2.0`，因為 Lab 14–16 使用 `np.trapezoid`。在舊版 numpy 中，這個函式叫 `np.trapz`。相依版本鎖在 `uv.lock`，`requirements.txt` 由它匯出。
+- 所有程式放在同一個資料夾，每支 Lab 都 `from labutils import check`，`labB*`、`labC*` 另外 `import cartpole`。`run_all.py`、`check_docs.py` 不論從哪個目錄執行都可以。
+- 每個 Lab 的「預期輸出」都是在上述環境實際跑出來的結果，`check_docs.py` 會逐行比對；GitHub Actions 會在 Python 3.12 與 3.13 上跑 `run_all.py` 與 `check_docs.py`，文件一過時 CI 就會變紅。不同作業系統的 BLAS 可能讓最後一位小數不同，所以 Linux 上的文件比對只警告、macOS 上才視為錯誤。如果 Lab 本身出現 FAIL，代表環境或程式有差異，值得追查。
 
 ### 0.3 檔案一覽
 
@@ -54,10 +55,13 @@ python labC3_swingup.py      # 或單獨執行任一課
 | [`labB1_lagrangian_cartpole.py`](../../m1-inverted-pendulum/sim/mechanics-labs/labB1_lagrangian_cartpole.py) | [b1-lagrangian-cartpole.md](b1-lagrangian-cartpole.md) | Lagrangian 推導 cart-pole、線性化 | 8 |
 | [`labB2_double_pendulum.py`](../../m1-inverted-pendulum/sim/mechanics-labs/labB2_double_pendulum.py) | [b2-double-pendulum.md](b2-double-pendulum.md) | 雙擺模態與混沌 | 7 |
 | [`labC1_pendulum_pid.py`](../../m1-inverted-pendulum/sim/mechanics-labs/labC1_pendulum_pid.py) | [c1-pendulum-pid.md](c1-pendulum-pid.md) | PID、回授線性化、飽和 | 7 |
-| [`labC2_cartpole_lqr.py`](../../m1-inverted-pendulum/sim/mechanics-labs/labC2_cartpole_lqr.py) | [c2-cartpole-lqr.md](c2-cartpole-lqr.md) | LQR、吸引域 | 5 |
-| [`labC3_swingup.py`](../../m1-inverted-pendulum/sim/mechanics-labs/labC3_swingup.py) | [c3-swingup.md](c3-swingup.md) | 能量式甩起 + LQR | 6 |
-| [`labC4_digital_control.py`](../../m1-inverted-pendulum/sim/mechanics-labs/labC4_digital_control.py) | [c4-digital-control.md](c4-digital-control.md) | 取樣、量化、延遲、雜訊 | 7 |
-| [`run_all.py`](../../m1-inverted-pendulum/sim/mechanics-labs/run_all.py) | — | 一鍵執行全部並彙整 | — |
+| [`labC2_cartpole_lqr.py`](../../m1-inverted-pendulum/sim/mechanics-labs/labC2_cartpole_lqr.py) | [c2-cartpole-lqr.md](c2-cartpole-lqr.md) | LQR、吸引域 | 7 |
+| [`labC3_swingup.py`](../../m1-inverted-pendulum/sim/mechanics-labs/labC3_swingup.py) | [c3-swingup.md](c3-swingup.md) | 能量式甩起 + LQR | 7 |
+| [`labC4_digital_control.py`](../../m1-inverted-pendulum/sim/mechanics-labs/labC4_digital_control.py) | [c4-digital-control.md](c4-digital-control.md) | 取樣、量化、延遲、雜訊 | 8 |
+| [`run_all.py`](../../m1-inverted-pendulum/sim/mechanics-labs/run_all.py) | — | 平行執行全部並彙整 | — |
+| [`check_docs.py`](../../m1-inverted-pendulum/sim/mechanics-labs/check_docs.py) | — | 比對文件「預期輸出」、檢核數與實際輸出 | — |
+| [`test_labs.py`](../../m1-inverted-pendulum/sim/mechanics-labs/test_labs.py) | — | pytest 入口（每支 Lab 一個測項 + 文件一致性） | — |
+| [`labutils.py`](../../m1-inverted-pendulum/sim/mechanics-labs/labutils.py) | — | 共用 `check()`、`--plot` 開關、`out/` 路徑 | — |
 
 ---
 

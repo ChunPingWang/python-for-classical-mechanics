@@ -9,9 +9,7 @@ import numpy as np
 from scipy.linalg import solve_continuous_are
 import cartpole as cp
 
-def check(name, cond):
-    print(f"[{'PASS' if cond else 'FAIL'}] {name}")
-    assert cond, name
+from labutils import check
 
 p = cp.PARAMS
 m, l, g, M = p["m"], p["l"], p["g"], p["M"]
@@ -28,12 +26,19 @@ def force_for_cart_accel(s, a):
     return (M + m) * a + m * l * np.cos(th) * thdd - m * l * np.sin(th) * thd**2
 
 class SwingUpLQR:
-    def __init__(self, kE=2.0, kx=2.0, kv=2.5, a_max=8.0, F_max=20.0, switch=0.35):
-        self.kE, self.kx, self.kv, self.a_max, self.F_max, self.switch = kE, kx, kv, a_max, F_max, switch
-        self.mode_log = []
+    def __init__(self, kE=2.0, kx=2.0, kv=2.5, a_max=8.0, F_max=20.0, switch=0.35, switch_back=0.6):
+        self.kE, self.kx, self.kv, self.a_max, self.F_max = kE, kx, kv, a_max, F_max
+        self.switch, self.switch_back = switch, switch_back
+        self.in_lqr, self.mode_log = False, []
     def __call__(self, t, s):
         e = s.copy(); e[1] = cp.wrap(s[1])
-        if abs(e[1]) < self.switch and abs(e[3]) < 4.0:          # 進入吸引域 → LQR 接手
+        # 遲滯 (hysteresis)：|θ| < switch 才進入 LQR；進入後要 |θ| > switch_back 才退回能量泵。
+        # 兩個門檻不同，擺桿在邊界附近抖動時才不會在兩個控制器之間來回切換 (chattering)。
+        if not self.in_lqr and abs(e[1]) < self.switch and abs(e[3]) < 4.0:
+            self.in_lqr = True
+        elif self.in_lqr and abs(e[1]) > self.switch_back:
+            self.in_lqr = False
+        if self.in_lqr:                                           # 吸引域內 → LQR 接手
             self.mode_log.append(1)
             return float(np.clip(-(K @ e)[0], -self.F_max, self.F_max))
         self.mode_log.append(0)
@@ -54,6 +59,9 @@ check("12 s 內成功甩起並穩定在倒立點", np.all(np.abs(th_w[t > 10]) <
 check("台車回到中央附近（|x| < 0.05 m）", abs(S[-1, 0]) < 0.05)
 check("推力未超過 F_max", np.max(np.abs(U)) <= ctrl.F_max + 1e-9)
 check("台車行程 < ±1 m（實體軌道限制）", np.max(np.abs(S[:, 0])) < 1.0)
+n_switch = int(np.sum(np.diff(modes) != 0))
+print(f"模式切換次數 = {n_switch}（能量泵 → LQR 之後不再切回）")
+check("混合控制只切換一次（遲滯避免在邊界抖動）", n_switch == 1)
 
 # 能量泵階段：擺桿能量誤差應該整體趨近 0
 pump = t < t_switch

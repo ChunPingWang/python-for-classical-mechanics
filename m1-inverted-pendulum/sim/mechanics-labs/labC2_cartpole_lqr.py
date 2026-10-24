@@ -6,9 +6,7 @@ from scipy.linalg import solve_continuous_are
 from scipy.signal import place_poles
 import cartpole as cp
 
-def check(name, cond):
-    print(f"[{'PASS' if cond else 'FAIL'}] {name}")
-    assert cond, name
+from labutils import check, want_plot, out_path
 
 A, B = cp.linearize_upright()
 
@@ -63,3 +61,44 @@ for u_max in [np.inf, 10.0]:
     else:
         check("推力飽和會縮小吸引域", th_max < th_inf)
 check("吸引域有限（> 30° 但不是全域）", np.radians(30) < th_inf < np.pi / 2 + 0.1)
+
+# ---------- 吸引域的二維切片 (θ0, θ̇0)：把整個格點排成 (4, N) 陣列一次向量化模擬 ----------
+def roa_grid(u_max, th_grid, thd_grid, T=8.0, dt=2e-3):
+    """回傳布林矩陣 [i_θ, j_θ̇]：從 (x=0, θ0, ẋ=0, θ̇0) 出發能否回到倒立點。判準與 recovers() 相同。"""
+    TH, THD = np.meshgrid(th_grid, thd_grid, indexing="ij")
+    S = np.zeros((4, TH.size)); S[1], S[3] = TH.ravel(), THD.ravel()
+    xmax = np.zeros(TH.size)
+    with np.errstate(all="ignore"):
+        for _ in range(int(round(T / dt))):
+            e = S.copy(); e[1] = cp.wrap(S[1])
+            u = np.clip(-(K @ e)[0], -u_max, u_max)
+            k1 = cp.dynamics(0, S, u); k2 = cp.dynamics(0, S + dt / 2 * k1, u)
+            k3 = cp.dynamics(0, S + dt / 2 * k2, u); k4 = cp.dynamics(0, S + dt * k3, u)
+            S = S + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+            xmax = np.maximum(xmax, np.abs(S[0]))
+        ok = np.isfinite(S).all(axis=0) & (np.abs(cp.wrap(S[1])) < 1e-2) & (xmax < 5.0)
+    return ok.reshape(TH.shape)
+
+th_grid = np.radians(np.arange(0, 91, 10))        # 0°..90°；(θ,θ̇)→(-θ,-θ̇) 對稱，負角不必再算
+thd_grid = np.arange(-4, 4.1, 1.0)                # rad/s
+roa = {u: roa_grid(u, th_grid, thd_grid) for u in [np.inf, 10.0]}
+for u, R_ in roa.items():
+    print(f"u_max={u:>4}：列 = θ0，欄 = θ̇0 由 {thd_grid[0]:+.0f} 到 {thd_grid[-1]:+.0f} rad/s，# = 可救回")
+    for i, th in enumerate(th_grid):
+        print(f"   {np.degrees(th):3.0f}°  " + "".join("#" if c else "." for c in R_[i]))
+frac = {u: R_.mean() for u, R_ in roa.items()}
+print(f"可救回比例：u_max=inf {frac[np.inf]:.0%}，u_max=10 N {frac[10.0]:.0%}")
+check("二維切片：推力飽和讓吸引域面積縮小", frac[10.0] < frac[np.inf])
+R_ = roa[np.inf][th_grid > 0]
+check("吸引域是斜的：θ0>0 時往回倒（θ̇0<0）比繼續倒（θ̇0>0）更容易救回",
+      R_[:, thd_grid < 0].sum() > R_[:, thd_grid > 0].sum())
+
+if want_plot():                                    # python labC2_cartpole_lqr.py --plot
+    import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(1, 2, figsize=(9, 3.6), sharey=True)
+    for a, (u, R_) in zip(ax, roa.items()):
+        a.imshow(R_.T, origin="lower", aspect="auto", cmap="Greens",
+                 extent=[np.degrees(th_grid[0]) - 5, np.degrees(th_grid[-1]) + 5, thd_grid[0] - .5, thd_grid[-1] + .5])
+        a.set_title(f"u_max = {u}"); a.set_xlabel("θ0 (deg)")
+    ax[0].set_ylabel("θ̇0 (rad/s)"); fig.tight_layout(); fig.savefig(out_path("labC2_roa.png"), dpi=120)
+    print("圖已存到", out_path("labC2_roa.png"))

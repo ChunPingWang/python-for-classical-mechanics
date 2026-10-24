@@ -4,9 +4,7 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 
-def check(name, cond):
-    print(f"[{'PASS' if cond else 'FAIL'}] {name}")
-    assert cond, name
+from labutils import check
 
 g = 9.81
 # ---------- 12.5/12.6 用「接觸彈簧」模擬一維碰撞 ----------

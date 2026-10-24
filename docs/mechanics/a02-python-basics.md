@@ -10,7 +10,7 @@
 
 **與原書差異**：原書 2.4 節先教 for-loop 再教向量化，本課直接採用向量化。亂數改用 `default_rng(seed)`，確保每次結果相同。
 
-**程式碼**：[`lab02_python_basics.py`](../../m1-inverted-pendulum/sim/mechanics-labs/lab02_python_basics.py)　｜　執行：`python lab02_python_basics.py`
+**程式碼**：[`lab02_python_basics.py`](../../m1-inverted-pendulum/sim/mechanics-labs/lab02_python_basics.py)　｜　執行：`python lab02_python_basics.py`（加 `--plot` 會把圖存到 `out/lab02.png`）
 
 **預期輸出**
 ```

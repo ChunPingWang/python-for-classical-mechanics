@@ -4,9 +4,7 @@
 """
 import numpy as np
 
-def check(name, cond):
-    print(f"[{'PASS' if cond else 'FAIL'}] {name}")
-    assert cond, name
+from labutils import check
 
 g = 9.81
 # ---------- 4.1 從「量測」位置資料反推速度 ----------

@@ -5,9 +5,7 @@ import numpy as np
 import sympy as sp
 from scipy.integrate import solve_ivp
 
-def check(name, cond):
-    print(f"[{'PASS' if cond else 'FAIL'}] {name}")
-    assert cond, name
+from labutils import check
 
 t = sp.symbols("t")
 m1, m2, l1, l2, g = sp.symbols("m1 m2 l1 l2 g", positive=True)
