@@ -1,8 +1,9 @@
 """比對教材文件與程式的實際輸出，避免文件過時。
 用法：python check_docs.py            # 比對，不一致時 exit 1
       python check_docs.py --update   # 把文件的「預期輸出」改成實際輸出（先確認差異合理再提交）
-      python check_docs.py --strict   # 要求逐字相同；預設容許數字只差末位（±1 個印出的最小單位或 10%），
-                                      # 因為不同 BLAS / 作業系統會讓極限環振幅、雜訊 RMS 這類量的最後一位不同
+      python check_docs.py --strict   # 要求逐字相同。預設：整數（拍數、角度、Hz）必須相同，帶小數點或指數的量
+                                      # 允許差 1 個印出單位或 20%，因為不同 BLAS / 作業系統會讓極限環振幅、
+                                      # 雜訊 RMS 這類「臨界」量差到一成多（例如延遲 8 拍的振幅 0.021 vs 0.018 rad）
 檢查三件事：
   1. docs/mechanics/*.md 的「預期輸出」區塊 == 對應 Lab 的 stdout
   2. docs/mechanics/README.md 檔案一覽表的「檢核數」欄 == 各 Lab 實際 PASS 數
@@ -31,11 +32,15 @@ def _ulp(tok):
     return 10.0 ** (int(m.group(2) or 0) - len(m.group(1) or ""))
 
 
-def lines_close(a, b, rel=0.10):
-    """文字部分（含 PASS/FAIL）必須相同；每個數字允許差 1 個印出單位或 10%。"""
+def lines_close(a, b, rel=0.20):
+    """文字部分（含 PASS/FAIL）必須相同；整數必須相同；帶小數點或指數的數字允許差 1 個印出單位或 rel。"""
     if NUM_RE.sub("#", a) != NUM_RE.sub("#", b):
         return False
     for ta, tb in zip(NUM_RE.findall(a), NUM_RE.findall(b)):
+        if ta == tb:
+            continue
+        if "." not in ta and "e" not in ta:          # 整數：拍數、角度、Hz、檢核數 → 必須完全相同
+            return False
         x, y = float(ta), float(tb)
         if abs(x - y) > max(1.01 * _ulp(ta), rel * abs(x)):
             return False

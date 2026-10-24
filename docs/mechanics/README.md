@@ -36,7 +36,7 @@ uv run python labC3_swingup.py       # 或單獨執行任一課；有圖的 Lab 
 
 - 需要 `numpy>=2.0`，因為 Lab 14–16 使用 `np.trapezoid`。在舊版 numpy 中，這個函式叫 `np.trapz`。相依版本鎖在 `uv.lock`，`requirements.txt` 由它匯出。
 - 所有程式放在同一個資料夾，每支 Lab 都 `from labutils import check`，`labB*`、`labC*` 另外 `import cartpole`。`run_all.py`、`check_docs.py` 不論從哪個目錄執行都可以。
-- 每個 Lab 的「預期輸出」都是在上述環境實際跑出來的結果，`check_docs.py` 會逐行比對；GitHub Actions 會在 Python 3.12 與 3.13 上跑 `run_all.py` 與 `check_docs.py`，文件一過時 CI 就會變紅。文件數字在 macOS（Accelerate BLAS）上產生，Linux 的 OpenBLAS 會讓極限環振幅、雜訊 RMS 這類量的最後一位不同，所以比對預設容許每個數字差 1 個印出單位或 10%（PASS/FAIL 與文字必須相同），`--strict` 才要求逐字相同。如果 Lab 本身出現 FAIL，代表環境或程式有差異，值得追查。
+- 每個 Lab 的「預期輸出」都是在上述環境實際跑出來的結果，`check_docs.py` 會逐行比對；GitHub Actions 會在 Python 3.12 與 3.13 上跑 `run_all.py` 與 `check_docs.py`，文件一過時 CI 就會變紅。文件數字在 macOS（Accelerate BLAS）上產生，Linux 的 OpenBLAS 會讓極限環振幅、雜訊 RMS 這類量的最後一位不同，所以比對預設只要求文字、PASS/FAIL 與整數（拍數、角度、Hz）相同，帶小數的量允許差 1 個印出單位或 20%；`--strict` 才要求逐字相同。如果 Lab 本身出現 FAIL，代表環境或程式有差異，值得追查。
 
 ### 0.3 檔案一覽
 
