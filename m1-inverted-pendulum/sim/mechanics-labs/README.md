@@ -13,6 +13,6 @@ uv run pytest -q             # pytest 介面（test_labs.py）
 - `labB*`：Lagrangian 力學（Taylor《Classical Mechanics》Ch7、11、12、13）
 - `labC*`：控制（Tedrake《Underactuated Robotics》）；`cartpole.py` 為共用模型，換成實體硬體時改 `PARAMS`
 - `labutils.py`：共用 `check()`；有圖的 Lab（02、C2）加 `--plot` 會把圖存到 `out/`
-- 相依版本鎖在 `uv.lock`，`requirements.txt` 由 `uv export` 產生；CI 見 `.github/workflows/mechanics-labs.yml`
+- 相依版本鎖在 `uv.lock`，`requirements.txt` 由 `uv export` 產生；提交前請在本地跑 `run_all.py`、`check_docs.py`、`pytest -q`
 
 最近一次驗證（2026-10-24）：96 項檢核全部 PASS（Python 3.13.15 / numpy 2.5.3 與 Python 3.12.14 / numpy 2.5.4；scipy 1.18.1、sympy 1.14.0、matplotlib 3.11.2）。圖檔輸出到 `out/`，已列入 `.gitignore`。

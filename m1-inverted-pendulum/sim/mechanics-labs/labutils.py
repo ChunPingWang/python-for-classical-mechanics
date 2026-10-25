@@ -16,7 +16,7 @@ def check(name, cond):
 
 
 def want_plot():
-    """加 --plot 旗標或設 LAB_PLOT=1 才畫圖；預設只做數值檢核，CI 與 run_all 都更快。"""
+    """加 --plot 旗標或設 LAB_PLOT=1 才畫圖；預設只做數值檢核，run_all 與 pytest 都更快。"""
     return "--plot" in sys.argv or os.environ.get("LAB_PLOT") == "1"
 
 
